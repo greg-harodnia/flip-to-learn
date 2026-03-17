@@ -5,16 +5,18 @@
   
   interface Props {
     category: Category;
+    reversed?: boolean;
     onback: () => void;
   }
-  
-  let { category, onback }: Props = $props();
+
+  let { category, reversed = false, onback }: Props = $props();
   
   let categoryCards = $derived(category.cards);
   let shuffledCards = $state<Card[]>([]);
   let currentIndex = $state(0);
   let initialized = $state(false);
   let lastCategoryId = $state(category.id);
+  let flipKey = $state(0);
   
   $effect(() => {
     if (category.id !== lastCategoryId) {
@@ -42,12 +44,14 @@
   function nextCard() {
     if (currentIndex < shuffledCards.length - 1) {
       currentIndex++;
+      flipKey++;
     }
   }
-  
+
   function prevCard() {
     if (currentIndex > 0) {
       currentIndex--;
+      flipKey++;
     }
   }
   
@@ -58,14 +62,15 @@
       if (currentIndex >= shuffledCards.length) {
         currentIndex = Math.max(0, shuffledCards.length - 1);
       }
+      flipKey++;
     }
   }
 </script>
 
 <div class="test-view">
   <header class="header">
-    <button class="btn-back" onclick={onback}>← Exit Test</button>
-    <h2>Test: {category.name}</h2>
+    <button class="btn-back" onclick={onback}>← Exit {reversed ? 'Reversed ' : ''}Test</button>
+    <h2>{reversed ? 'Reversed ' : ''}Test: {category.name}</h2>
     <span class="counter">{currentIndex + 1} / {shuffledCards.length}</span>
   </header>
   
@@ -73,8 +78,8 @@
     <p class="empty">No cards in this category to test.</p>
   {:else if currentCard}
     <div class="test-card">
-      {#key currentIndex}
-        <FlipCard card={currentCard} flipped={false} />
+      {#key flipKey}
+        <FlipCard card={currentCard} flipped={reversed} />
       {/key}
     </div>
     

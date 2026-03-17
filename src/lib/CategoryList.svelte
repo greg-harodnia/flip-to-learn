@@ -6,9 +6,10 @@
     category: Category;
     onback: () => void;
     ontest: () => void;
+    ontestreversed?: () => void;
   }
-  
-  let { category, onback, ontest }: Props = $props();
+
+  let { category, onback, ontest, ontestreversed }: Props = $props();
   
   let searchQuery = $state('');
   let selectedCards = $state<Set<string>>(new Set());
@@ -128,7 +129,12 @@
   <header class="header">
     <button class="btn-back" onclick={onback}>← Back</button>
     <h2>{category.name}</h2>
-    <button class="btn-test" onclick={ontest}>Test</button>
+    <div class="test-buttons">
+      <button class="btn-test" onclick={ontest}>Test</button>
+      {#if ontestreversed}
+        <button class="btn-test-reversed" onclick={ontestreversed}>Reversed Test</button>
+      {/if}
+    </div>
   </header>
   
   <div class="toolbar">
@@ -313,6 +319,21 @@
   .btn-test {
     background: #10b981;
     color: white;
+  }
+
+  .test-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-test-reversed {
+    background: #f59e0b;
+    color: white;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
   }
   
   .create-form {

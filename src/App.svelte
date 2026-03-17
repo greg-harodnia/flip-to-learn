@@ -9,6 +9,7 @@
   let selectedCategory = $state<Category | null>(null);
   let showAddCategory = $state(false);
   let newCategoryName = $state('');
+  let reversedTest = $state(false);
   
   function openCategory(category: Category) {
     selectedCategory = category;
@@ -22,6 +23,14 @@
   
   function startTest() {
     if (selectedCategory) {
+      reversedTest = false;
+      currentView = 'test';
+    }
+  }
+  
+  function startReversedTest() {
+    if (selectedCategory) {
+      reversedTest = true;
       currentView = 'test';
     }
   }
@@ -155,10 +164,12 @@
       category={selectedCategory} 
       onback={goHome}
       ontest={startTest}
+      ontestreversed={startReversedTest}
     />
   {:else if currentView === 'test' && selectedCategory}
     <TestMode 
       category={selectedCategory}
+      reversed={reversedTest}
       onback={exitTest}
     />
   {/if}
