@@ -5,13 +5,14 @@
   
   interface Props {
     card: Card;
+    categoryId: string;
     onclose: () => void;
     ondelete?: () => void;
     categories?: Category[];
     startFlipped?: boolean;
   }
   
-  let { card, onclose, ondelete, categories: allCategories = [], startFlipped = false }: Props = $props();
+  let { card, categoryId, onclose, ondelete, categories: allCategories = [], startFlipped = false }: Props = $props();
   
   let showMoveMenu = $state(false);
   let isEditing = $state(false);
@@ -20,19 +21,19 @@
   
   function handleDelete() {
     if (confirm('Delete this card?')) {
-      removeCard(card.id);
+      removeCard(categoryId, card.id);
       ondelete?.();
     }
   }
   
   function moveTo(targetCategoryId: string) {
-    moveCard(card.id, targetCategoryId);
+    moveCard(card.id, categoryId, targetCategoryId);
     onclose();
   }
   
   function saveEdit() {
     if (editFront.trim() && editBack.trim()) {
-      updateCard(card.id, editFront.trim(), editBack.trim());
+      updateCard(categoryId, card.id, editFront.trim(), editBack.trim());
       isEditing = false;
       onclose();
     }
@@ -45,7 +46,7 @@
   }
   
   function getOtherCategories() {
-    return allCategories.filter(c => c.id !== card.categoryId);
+    return allCategories.filter(c => c.id !== categoryId);
   }
   
   function handleKeydown(e: KeyboardEvent) {

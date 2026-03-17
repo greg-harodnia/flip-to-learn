@@ -3,17 +3,18 @@
 
   interface Props {
     card: Card;
+    fromCategoryId: string;
     onmoved?: () => void;
   }
 
-  let { card, onmoved }: Props = $props();
+  let { card, fromCategoryId, onmoved }: Props = $props();
 
   let selectedCategoryId = $state('');
-  let otherCategories = $derived($categories.filter(c => c.id !== card.categoryId));
+  let otherCategories = $derived($categories.filter(c => c.id !== fromCategoryId));
 
   function handleMove() {
     if (selectedCategoryId) {
-      moveCard(card.id, selectedCategoryId);
+      moveCard(card.id, fromCategoryId, selectedCategoryId);
       selectedCategoryId = '';
       onmoved?.();
     }

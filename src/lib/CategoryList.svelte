@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cards, categories, removeCard, moveCard, searchCards, addCard, updateCard, type Card, type Category } from './store';
+  import { categories, removeCard, moveCard, searchCards, addCard, updateCard, type Card, type Category } from './store';
   import FlipCard from './FlipCard.svelte';
   
   interface Props {
@@ -24,7 +24,7 @@
   
   let filteredCards = $derived(
     (searchQuery ? searchCards(searchQuery, category.id) 
-      : $cards.filter(c => c.categoryId === category.id)).reverse()
+      : [...category.cards]).reverse()
   );
   
   function clearSearch() {
@@ -42,7 +42,7 @@
   }
   
   function deleteSelected() {
-    selectedCards.forEach(id => removeCard(id));
+    selectedCards.forEach(id => removeCard(category.id, id));
     selectedCards = new Set();
   }
   
@@ -56,7 +56,7 @@
   }
   
   function moveSelected(targetCategoryId: string) {
-    selectedCards.forEach(id => moveCard(id, targetCategoryId));
+    selectedCards.forEach(id => moveCard(id, category.id, targetCategoryId));
     selectedCards = new Set();
   }
   
@@ -102,21 +102,21 @@
   
   function handleMoveTo(targetCategoryId: string) {
     if (movingCard) {
-      moveCard(movingCard.id, targetCategoryId);
+      moveCard(movingCard.id, category.id, targetCategoryId);
       movingCard = null;
     }
   }
   
   function saveEdit() {
     if (editingCard && editFront.trim() && editBack.trim()) {
-      updateCard(editingCard.id, editFront.trim(), editBack.trim());
+      updateCard(category.id, editingCard.id, editFront.trim(), editBack.trim());
       cancelEdit();
     }
   }
   
   function deleteCard(cardId: string) {
     if (confirm('Delete this card?')) {
-      removeCard(cardId);
+      removeCard(category.id, cardId);
       if (flippedCardId === cardId) {
         flippedCardId = null;
       }

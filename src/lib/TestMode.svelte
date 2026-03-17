@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cards, categories, type Card, type Category } from './store';
+  import { categories, type Card, type Category } from './store';
   import FlipCard from './FlipCard.svelte';
   import CardMoveSelect from './CardMoveSelect.svelte';
   
@@ -10,7 +10,7 @@
   
   let { category, onback }: Props = $props();
   
-  let categoryCards = $derived($cards.filter(c => c.categoryId === category.id));
+  let categoryCards = $derived(category.cards);
   let shuffledCards = $state<Card[]>([]);
   let currentIndex = $state(0);
   let initialized = $state(false);
@@ -85,7 +85,7 @@
 
     {#if currentCard && otherCategories.length > 0}
       <div class="move-controls">
-        <CardMoveSelect card={currentCard} onmoved={handleMoved} />
+        <CardMoveSelect card={currentCard} fromCategoryId={category.id} onmoved={handleMoved} />
       </div>
     {/if}
   {/if}

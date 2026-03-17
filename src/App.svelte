@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { categories, addCategory, removeCategory, cards, type Category } from './lib/store';
+  import { categories, addCategory, removeCategory, exportData, importData, type Category, type BackupData } from './lib/store';
   import CategoryList from './lib/CategoryList.svelte';
   import TestMode from './lib/TestMode.svelte';
   
@@ -45,7 +45,44 @@
   }
   
   function getCardCount(categoryId: string): number {
-    return $cards.filter(c => c.categoryId === categoryId).length;
+    const cat = $categories.find(c => c.id === categoryId);
+    return cat?.cards.length ?? 0;
+  }
+  
+  let showSettings = $state(false);
+  let fileInput: HTMLInputElement;
+  
+  function handleBackup() {
+    const data = exportData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fliptolearn-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  
+  function handleRestore(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string) as BackupData;
+        if (importData(data)) {
+          alert('Data restored successfully!');
+        } else {
+          alert('Invalid backup file.');
+        }
+      } catch {
+        alert('Error reading backup file.');
+      }
+    };
+    reader.readAsText(file);
+    input.value = '';
   }
 </script>
 
@@ -53,10 +90,32 @@
   {#if currentView === 'home'}
     <header class="app-header">
       <h1>Flip to Learn</h1>
-      <button class="btn-add-cat" onclick={() => showAddCategory = !showAddCategory}>
-        {showAddCategory ? '✕' : '+ Category'}
-      </button>
+      <div class="header-actions">
+        <button class="btn-settings" onclick={() => showSettings = !showSettings}>
+          ⚙️
+        </button>
+        <button class="btn-add-cat" onclick={() => showAddCategory = !showAddCategory}>
+          {showAddCategory ? '✕' : '+ Category'}
+        </button>
+      </div>
     </header>
+    
+    {#if showSettings}
+      <div class="settings-panel">
+        <h3>Backup & Restore</h3>
+        <div class="settings-buttons">
+          <button class="btn-backup" onclick={handleBackup}>📥 Download Backup</button>
+          <button class="btn-restore" onclick={() => fileInput.click()}>📤 Restore Backup</button>
+          <input 
+            type="file" 
+            accept=".json" 
+            bind:this={fileInput} 
+            onchange={handleRestore} 
+            style="display: none;"
+          />
+        </div>
+      </div>
+    {/if}
     
     {#if showAddCategory}
       <div class="add-category-form">
@@ -257,5 +316,56 @@
     text-align: center;
     color: grey;
     margin-top: 2rem;
+  }
+  
+  .header-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  .btn-settings {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+  }
+  
+  .btn-settings:hover {
+    background: #eee;
+  }
+  
+  .settings-panel {
+    background: white;
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  .settings-panel h3 {
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+  }
+  
+  .settings-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .btn-backup, .btn-restore {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.875rem;
+  }
+  
+  .btn-backup:hover, .btn-restore:hover {
+    background: #f5f5f5;
   }
 </style>
